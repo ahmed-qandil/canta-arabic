@@ -35,15 +35,29 @@ jobs:
           $AAPT dump badging "$APK" | head -3
           $AAPT dump badging "$APK" | grep "versionName='4.1.0-ar1'" || (echo 'WRONG versionName' && exit 1)
           if unzip -l "$APK" | grep -qE 'META-INF/.*\.(RSA|DSA|EC|SF)'; then echo 'APK IS SIGNED - expected unsigned'; exit 1; fi
-          echo "--- lib dirs (none = pure Kotlin, runs on 32+64 bit) ---"
+          echo "--- lib dirs ---"
           unzip -l "$APK" | grep 'lib/' || echo "no native libs: universal"
           python3 - <<'EOF'
-          import zipfile
-          z = zipfile.ZipFile([f for f in __import__('glob').glob('androidApp/build/outputs/apk/release/*.apk')][0])
-          arsc = z.read('resources.arsc')
-          for s in ['مستخدم الجهاز', 'حدّد الكل', 'جارٍ تحميل التطبيقات']:
-              assert s.encode('utf-8') in arsc or s.encode('utf-16-le') in arsc, 'MISSING ' + s
-          print('Arabic strings verified in resources.arsc')
+          import glob, zipfile, xml.etree.ElementTree as ET
+          apk = glob.glob('androidApp/build/outputs/apk/release/*.apk')[0]
+          z = zipfile.ZipFile(apk)
+          # ABI check: if any native lib exists, both 32-bit and 64-bit arm must be present
+          libs = [n for n in z.namelist() if n.startswith('lib/') and n.endswith('.so')]
+          abis = sorted({n.split('/')[1] for n in libs})
+          print('ABIs:', abis or 'none (pure Kotlin: runs on 32+64 bit)')
+          if libs:
+              assert 'armeabi-v7a' in abis and 'arm64-v8a' in abis, 'MISSING arm ABI (need 32+64 bit)'
+          # Arabic strings live in Compose Multiplatform resources (assets/*.cvr), not resources.arsc.
+          # Pull expected strings from the Arabic source XML (exact bytes, incl. new ones we added).
+          tree = ET.parse('composeApp/src/commonMain/composeResources/values-ar-rSA/strings.xml')
+          vals = {e.get('name'): (e.text or '') for e in tree.getroot() if e.tag == 'string'}
+          wanted = [vals['device_user'], vals['select_all'], vals['loading_apps']]
+          blobs = [(n, z.read(n)) for n in z.namelist()]
+          for s in wanted:
+              hit = next((n for n, d in blobs if s.encode('utf-8') in d or s.encode('utf-16-le') in d), None)
+              assert hit, 'MISSING Arabic string in APK: ' + s
+              print('Arabic OK:', s, '->', hit)
+          print('Arabic strings verified in APK')
           EOF
 
       - name: Create source zip
