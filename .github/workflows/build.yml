@@ -54,16 +54,25 @@ jobs:
           print('ABIs:', abis or 'none (pure Kotlin: runs on 32+64 bit)')
           if libs:
               assert 'armeabi-v7a' in abis and 'arm64-v8a' in abis, 'MISSING arm ABI (need 32+64 bit)'
-          # Arabic strings live in Compose Multiplatform resources (assets/*.cvr), not resources.arsc.
-          # Pull expected strings from the Arabic source XML (exact bytes, incl. new ones we added).
+          # Arabic strings live in Compose Multiplatform assets: assets/composeResources/**/values-ar*/strings.commonMain.cvr
+          # cvr format: lines 'string|name|<base64-utf8 value>' (base64 may lack padding)
           tree = ET.parse('composeApp/src/commonMain/composeResources/values-ar-rSA/strings.xml')
           vals = {e.get('name'): (e.text or '') for e in tree.getroot() if e.tag == 'string'}
-          wanted = [vals['device_user'], vals['select_all'], vals['loading_apps']]
-          blobs = [(n, z.read(n)) for n in z.namelist()]
-          for s in wanted:
-              hit = next((n for n, d in blobs if s.encode('utf-8') in d or s.encode('utf-16-le') in d), None)
-              assert hit, 'MISSING Arabic string in APK: ' + s
-              print('Arabic OK:', s, '->', hit)
+          import base64
+          found = {}
+          cvr_files = [n for n in z.namelist() if n.startswith('assets/composeResources/') and 'values-ar' in n and n.endswith('.cvr')]
+          assert cvr_files, 'no Arabic compose resources (.cvr) in APK'
+          for n in cvr_files:
+              for line in z.read(n).decode('utf-8').splitlines():
+                  parts = line.split('|')
+                  if len(parts) == 3 and parts[0] == 'string':
+                      b = parts[2] + '=' * (-len(parts[2]) % 4)
+                      found[parts[1]] = base64.b64decode(b).decode('utf-8')
+          print('Arabic cvr files:', cvr_files, '| strings decoded:', len(found))
+          for key in ['device_user', 'device_user_description', 'select_all', 'loading_apps']:
+              got = found.get(key)
+              assert got == vals[key], f'{key}: got {got!r} want {vals[key]!r}'
+              print('Arabic OK:', key, '=', got)
           print('Arabic strings verified in APK')
           EOF
 
