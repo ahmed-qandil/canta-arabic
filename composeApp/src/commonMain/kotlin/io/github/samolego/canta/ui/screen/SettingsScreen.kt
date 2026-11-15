@@ -35,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import org.jetbrains.compose.resources.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -50,7 +51,13 @@ import io.github.samolego.canta.generated.resources.auth_required
 import io.github.samolego.canta.generated.resources.auth_required_description
 import io.github.samolego.canta.generated.resources.auto_update_bloat_list
 import io.github.samolego.canta.generated.resources.auto_update_bloat_list_description
+import io.github.samolego.canta.generated.resources.bloat_list_url
+import io.github.samolego.canta.generated.resources.bloat_list_url_description
 import io.github.samolego.canta.generated.resources.click_to_expand
+import io.github.samolego.canta.generated.resources.commits_url
+import io.github.samolego.canta.generated.resources.commits_url_description
+import io.github.samolego.canta.generated.resources.source_custom_label
+import io.github.samolego.canta.generated.resources.source_default_label
 import io.github.samolego.canta.generated.resources.confirm_uninstall
 import io.github.samolego.canta.generated.resources.confirm_uninstall_description
 import io.github.samolego.canta.generated.resources.device_user
@@ -64,6 +71,7 @@ import io.github.samolego.canta.ui.component.SettingsItem
 import io.github.samolego.canta.ui.component.SwitchSettingsItem
 import io.github.samolego.canta.ui.component.ScreenTopBar
 import io.github.samolego.canta.ui.component.ExpandIcon
+import io.github.samolego.canta.ui.component.SettingsTextItem
 import io.github.samolego.canta.ui.viewmodel.SettingsViewModel
 
 
@@ -81,6 +89,8 @@ fun SettingsScreen(
     val allowUnsafe by settingsViewModel.allowUnsafeUninstalls.collectAsStateWithLifecycle()
     val hideSuccessDialog by settingsViewModel.hideSuccessDialog.collectAsStateWithLifecycle()
     val authEnabled by settingsViewModel.authEnabled.collectAsStateWithLifecycle()
+    val bloatListUrl by settingsViewModel.bloatListUrl.collectAsStateWithLifecycle()
+    val commitsUrl by settingsViewModel.commitsUrl.collectAsStateWithLifecycle()
     var advancedSettingsExpanded by rememberSaveable { mutableStateOf(false) }
     val authRequiredTitle = stringResource(Res.string.auth_required)
     val authRequiredSubtitle = stringResource(Res.string.auth_required_description)
@@ -153,6 +163,24 @@ fun SettingsScreen(
                         icon = Icons.Default.Close,
                         checked = allowUnsafe,
                         onCheckedChange = settingsViewModel::saveAllowUnsafeUninstalls,
+                    )
+                    SettingsTextItem(
+                        title = stringResource(Res.string.bloat_list_url),
+                        description = stringResource(Res.string.bloat_list_url_description),
+                        icon = Icons.Default.Link,
+                        keyboardType = KeyboardType.Uri,
+                        storedValue = bloatListUrl,
+                        onCommit = settingsViewModel::saveBloatListUrl,
+                        maskedDisplay = stringResource(if (bloatListUrl.isBlank()) Res.string.source_default_label else Res.string.source_custom_label),
+                    )
+                    SettingsTextItem(
+                        title = stringResource(Res.string.commits_url),
+                        description = stringResource(Res.string.commits_url_description),
+                        icon = Icons.Default.Link,
+                        keyboardType = KeyboardType.Uri,
+                        storedValue = commitsUrl,
+                        onCommit = settingsViewModel::saveCommitsUrl,
+                        maskedDisplay = stringResource(if (commitsUrl.isBlank()) Res.string.source_default_label else Res.string.source_custom_label),
                     )
                 }
             }

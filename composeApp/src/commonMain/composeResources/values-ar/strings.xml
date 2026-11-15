@@ -152,4 +152,10 @@
     <string name="device_busy_linux">الجهاز مشغول: برنامج آخر على هذا الكمبيوتر يستحوذ عليه. على Linux غالبًا يكون ModemManager أو خادم adb أو مراقب نقل الملفات (MTP). أوقفها (مثلاً sudo systemctl stop ModemManager)، وافصل الهاتف ثم أعد توصيله، ثم اختره مرة أخرى.</string>
     <string name="device_user">مستخدم الجهاز</string>
     <string name="device_user_description">المستخدم أو الملف الشخصي على الجهاز الذي تديره Canta</string>
+    <string name="commits_url">رابط الإيداعات</string>
+    <string name="commits_url_description">مصدر معلومات التحديثات</string>
+    <string name="bloat_list_url">رابط قائمة البرامج غير المرغوب بها</string>
+    <string name="bloat_list_url_description">مصدر الشارات والأوصاف</string>
+    <string name="source_default_label">المصدر الرسمي الافتراضي</string>
+    <string name="source_custom_label">مصدر مخصص</string>
 </resources>

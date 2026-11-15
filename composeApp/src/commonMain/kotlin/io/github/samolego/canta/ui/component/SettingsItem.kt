@@ -119,6 +119,9 @@ private const val DISABLED_ALPHA = 0.4f
  * A settings row with a text field. The field is seeded from [storedValue]
  * (and re-seeded when it changes), and edits are only saved through
  * [onCommit] on the keyboard's Done action or when the field loses focus.
+ * When [maskedDisplay] is given, the field shows that friendly label instead
+ * of the raw value until the user focuses the field to edit; focusing reveals
+ * the real value for editing and the label returns once editing ends.
  */
 @Composable
 fun SettingsTextItem(
@@ -128,7 +131,9 @@ fun SettingsTextItem(
     description: String? = null,
     icon: ImageVector? = null,
     keyboardType: KeyboardType = KeyboardType.Text,
+    maskedDisplay: String? = null,
 ) {
+    var focused by remember { mutableStateOf(false) }
     var value by remember(storedValue) { mutableStateOf(storedValue) }
     val commit = { if (value != storedValue) onCommit(value.trim()) }
 
@@ -157,9 +162,16 @@ fun SettingsTextItem(
                 )
             }
             OutlinedTextField(
-                value = value,
+                value = if (focused || maskedDisplay == null) value else maskedDisplay,
                 onValueChange = { value = it },
-                modifier = Modifier.fillMaxWidth().onFocusChanged { if (!it.isFocused) commit() },
+                modifier = Modifier.fillMaxWidth().onFocusChanged {
+                    if (it.isFocused && maskedDisplay != null) {
+                        value = storedValue
+                    } else if (!it.isFocused) {
+                        commit()
+                    }
+                    focused = it.isFocused
+                },
                 keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = { commit() }),
                 singleLine = true,
