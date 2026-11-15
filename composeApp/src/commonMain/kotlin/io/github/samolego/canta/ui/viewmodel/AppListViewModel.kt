@@ -37,8 +37,6 @@ class AppListViewModel(
         private const val ICON_APPLY_BATCH = 20
         /** ...or after this long, whichever comes first. */
         private const val ICON_APPLY_INTERVAL_MS = 100L
-        private const val UAD_CREDIT =
-            "Universal Debloater Alliance (https://github.com/Universal-Debloater-Alliance/universal-android-debloater-next-generation)"
     }
 
     private val _apps = mutableStateListOf<AppInfo>()
@@ -123,7 +121,7 @@ class AppListViewModel(
     }
 
     private suspend fun applyBloatData(bloat: Map<String, BloatData>) {
-        val cantaBloat = BloatData(description = getString(Res.string.canta_description, UAD_CREDIT), badgeInfo = null)
+        val cantaBloat = BloatData(description = getString(Res.string.canta_description), badgeInfo = null)
         for (index in _apps.indices) {
             val app = _apps[index]
             val bloatData = if (app.packageName == CANTA_PACKAGE_NAME) cantaBloat else bloat[app.packageName]

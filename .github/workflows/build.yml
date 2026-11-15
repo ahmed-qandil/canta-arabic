@@ -40,7 +40,7 @@ jobs:
           ls -la "$APK"
           AAPT=$(ls -d $ANDROID_HOME/build-tools/*/aapt | sort -V | tail -1)
           $AAPT dump badging "$APK" | head -3
-          $AAPT dump badging "$APK" | grep "versionName='4.1.0-ar1'" || (echo 'WRONG versionName' && exit 1)
+          $AAPT dump badging "$APK" | grep "versionName='4.1.0-ar2'" || (echo 'WRONG versionName' && exit 1)
           if unzip -l "$APK" | grep -qE 'META-INF/.*\.(RSA|DSA|EC|SF)'; then echo 'APK IS SIGNED - expected unsigned'; exit 1; fi
           echo "--- lib dirs ---"
           unzip -l "$APK" | grep 'lib/' || echo "no native libs: universal"
@@ -56,11 +56,13 @@ jobs:
               assert 'armeabi-v7a' in abis and 'arm64-v8a' in abis, 'MISSING arm ABI (need 32+64 bit)'
           # Arabic strings live in Compose Multiplatform assets: assets/composeResources/**/values-ar*/strings.commonMain.cvr
           # cvr format: lines 'string|name|<base64-utf8 value>' (base64 may lack padding)
-          tree = ET.parse('composeApp/src/commonMain/composeResources/values-ar-rSA/strings.xml')
+          tree = ET.parse('composeApp/src/commonMain/composeResources/values-ar/strings.xml')
           vals = {e.get('name'): (e.text or '') for e in tree.getroot() if e.tag == 'string'}
           import base64
           found = {}
-          cvr_files = [n for n in z.namelist() if n.startswith('assets/composeResources/') and 'values-ar' in n and n.endswith('.cvr')]
+          cvr_files = [n for n in z.namelist() if n.startswith('assets/composeResources/') and '/values-ar/' in n and n.endswith('.cvr')]
+          assert cvr_files, 'no values-ar compose resources (.cvr) in APK'
+          assert not any('values-ar-r' in n for n in z.namelist() if n.endswith('.cvr')), 'region-qualified Arabic cvr present: resolution bug'
           assert cvr_files, 'no Arabic compose resources (.cvr) in APK'
           for n in cvr_files:
               for line in z.read(n).decode('utf-8').splitlines():
@@ -74,20 +76,26 @@ jobs:
               assert got == vals[key], f'{key}: got {got!r} want {vals[key]!r}'
               print('Arabic OK:', key, '=', got)
           print('Arabic strings verified in APK')
+          # No visible links: decoded Arabic + default string resources must contain no http(s) URLs
+          default_tree = ET.parse('composeApp/src/commonMain/composeResources/values/strings.xml')
+          for fname, vals2 in [('default', {e.get('name'): (e.text or '') for e in default_tree.getroot() if e.tag == 'string'}), ('values-ar', found)]:
+              bad = {k: v for k, v in vals2.items() if 'http://' in v or 'https://' in v}
+              assert not bad, f'URLs present in {fname} strings: {bad}'
+          print('No URLs in visible string resources')
           EOF
 
       - name: Create source zip
-        run: git archive -o canta-4.1.0-ar1-source.zip HEAD
+        run: git archive -o canta-4.1.0-ar2-source.zip HEAD
 
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v4.1.0-ar1
-          name: Canta 4.1.0-ar1 (Arabic, universal)
+          tag_name: v4.1.0-ar2
+          name: Canta 4.1.0-ar2 (Arabic, universal)
           body: |
-            Canta 4.1.0 - Arabic custom build (ar1).
+            Canta 4.1.0 - Arabic custom build (ar2).
             Unsigned universal APK (pure Kotlin: runs on 32-bit and 64-bit).
             Full modified source code included in the zip.
           files: |
             androidApp/build/outputs/apk/release/*.apk
-            canta-4.1.0-ar1-source.zip
+            canta-4.1.0-ar2-source.zip

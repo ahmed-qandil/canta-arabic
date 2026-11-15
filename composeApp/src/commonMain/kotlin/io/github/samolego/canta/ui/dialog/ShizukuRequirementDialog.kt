@@ -43,8 +43,6 @@ import io.github.samolego.canta.ui.theme.GreenOk
 import io.github.samolego.canta.ui.theme.Orange
 import org.jetbrains.compose.resources.stringResource
 
-private const val SHIZUKU_PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=moe.shizuku.privileged.api"
-private const val SHIZUKU_GITHUB_URL = "https://github.com/RikkaApps/Shizuku/releases"
 
 /**
  * Walks the user through the Shizuku setup. [onClose] with `true` means
@@ -99,12 +97,10 @@ internal fun ShizukuRequirementDialogContent(
             RequirementItem(
                 text = stringResource(Res.string.install_shizuku),
                 isCompleted = status != PrivilegeStatus.NOT_AVAILABLE,
-                onActionClick = { platform.openUrl(SHIZUKU_PLAY_STORE_URL) },
             )
             RequirementItem(
                 text = stringResource(Res.string.start_shizuku_service),
                 isCompleted = status == PrivilegeStatus.ACTIVE || status == PrivilegeStatus.NOT_AUTHORIZED,
-                onActionClick = { platform.openUrl(SHIZUKU_GITHUB_URL) },
             )
             RequirementItem(
                 text = stringResource(Res.string.grant_shizuku_permission_to_canta),
@@ -120,7 +116,7 @@ internal fun RequirementItem(
     text: String,
     isCompleted: Boolean,
     enabled: Boolean = true,
-    onActionClick: () -> Unit,
+    onActionClick: (() -> Unit)? = null,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth().alpha(if (enabled) 1f else 0.4f),
@@ -144,8 +140,8 @@ internal fun RequirementItem(
             modifier = Modifier.weight(1f)
         )
 
-        if (!isCompleted) {
-            IconButton(onClick = onActionClick, modifier = Modifier.size(32.dp)) {
+        if (!isCompleted && onActionClick != null) {
+            IconButton(onClick = { onActionClick() }, modifier = Modifier.size(32.dp)) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Default.ArrowForward,
                     contentDescription = stringResource(Res.string.take_action),
