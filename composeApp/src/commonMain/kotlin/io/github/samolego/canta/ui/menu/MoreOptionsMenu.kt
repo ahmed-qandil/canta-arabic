@@ -10,7 +10,6 @@ import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
 import io.github.samolego.canta.generated.resources.Res
 import io.github.samolego.canta.generated.resources.badge_info
-import io.github.samolego.canta.generated.resources.logs
 import io.github.samolego.canta.generated.resources.presets
 import io.github.samolego.canta.generated.resources.settings
 import io.github.samolego.canta.ui.navigation.Screen
@@ -33,15 +32,6 @@ fun MoreOptionsMenu(
                 text = { Text(stringResource(Res.string.badge_info)) },
                 onClick = {
                     showBadgeInfoDialog()
-                    onDismiss()
-                }
-        )
-
-        // Logs page
-        DropdownMenuItem(
-                text = { Text(stringResource(Res.string.logs)) },
-                onClick = {
-                    navigateToPage(Screen.Logs.route)
                     onDismiss()
                 }
         )

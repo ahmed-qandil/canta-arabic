@@ -27,6 +27,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import io.github.samolego.canta.CANTA_PACKAGE_NAME
 import io.github.samolego.canta.data.app.AppInfo
@@ -101,6 +103,7 @@ fun AppTile(
                     checked = isSelected,
                     onCheckedChange = onCheckChanged,
                     enabled = enabled,
+                    modifier = Modifier.semantics { contentDescription = appInfo.name },
                     colors =
                             CheckboxDefaults.colors(
                                 checkedColor = checkedColor,
@@ -141,14 +144,14 @@ fun AppIconImage(
 ) {
     AppIconImage(
         appIconImage = appInfo.icon,
-        contentDescription = appInfo.name,
+        contentDescription = null,
     )
 }
 
 @Composable
 fun AppIconImage(
     appIconImage: ImageBitmap?,
-    contentDescription: String,
+    contentDescription: String?,
 ) {
     if (appIconImage != null) {
         Image(

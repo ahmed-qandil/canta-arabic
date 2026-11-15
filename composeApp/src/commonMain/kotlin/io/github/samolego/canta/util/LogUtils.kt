@@ -29,9 +29,7 @@ object LogUtils {
         log(LogLevel.ERROR, tag, message, throwable)
 
     private fun log(level: LogLevel, tag: String, message: String, throwable: Throwable? = null) {
-        platformLog(level, tag, message, throwable)
-        val text = throwable?.let { "$message\n${it.stackTraceToString()}" } ?: message
-        logs.add(LogEntry(level, tag, text, currentTimeMillis()))
+        // Logging removed in the Arabic build: no in-app log page, no platform log.
     }
 
     fun getLogs(): List<LogEntry> = logs

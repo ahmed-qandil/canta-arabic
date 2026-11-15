@@ -25,10 +25,7 @@ import io.github.samolego.canta.core.CantaAppDependencies
 import io.github.samolego.canta.core.DeviceUser
 import io.github.samolego.canta.generated.resources.Res
 import io.github.samolego.canta.generated.resources.preset_save_error
-import io.github.samolego.canta.generated.resources.select_all_enabled
-import io.github.samolego.canta.generated.resources.select_all_tip
 import io.github.samolego.canta.ui.navigation.Screen
-import io.github.samolego.canta.ui.screen.LogsScreen
 import io.github.samolego.canta.ui.screen.MainScreen
 import io.github.samolego.canta.ui.screen.PresetsScreen
 import io.github.samolego.canta.ui.screen.SettingsScreen
@@ -41,10 +38,8 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 
 /** Taps on the version in settings that unlock "select all" for recommended apps. */
-private const val SECRET_TAPS = 6
 
 /** Taps after which the remaining count is hinted. */
-private const val SECRET_TAPS_HINT_AFTER = 3
 
 /** The app's root composable, shared by the Android, desktop and web entry points. */
 @Composable
@@ -73,7 +68,6 @@ private fun CantaNavigation(deps: CantaAppDependencies, closeApp: () -> Unit) {
     val pagerState = rememberPagerState(pageCount = { AppsType.entries.size })
     val selectedAppsType = AppsType.entries[pagerState.currentPage]
 
-    var versionTapCounter by remember { mutableIntStateOf(0) }
 
     val snackbarHostState = remember { SnackbarHostState() }
     LaunchedEffect(platform) {
@@ -109,13 +103,7 @@ private fun CantaNavigation(deps: CantaAppDependencies, closeApp: () -> Unit) {
                     },
                     navigateToPage = { navController.navigate(it) },
                     closeApp = closeApp,
-                    enableSelectAll = versionTapCounter >= SECRET_TAPS,
-                )
-            }
-            composable(route = Screen.Logs.route) {
-                LogsScreen(
-                    platform = platform,
-                    onNavigateBack = { navController.navigateUp() },
+                    enableSelectAll = false,
                 )
             }
             composable(route = Screen.Settings.route) {
@@ -139,17 +127,6 @@ private fun CantaNavigation(deps: CantaAppDependencies, closeApp: () -> Unit) {
                             selectedUserId = handler.selectedUserId
                             appListViewModel.selectedApps.clear()
                             appListViewModel.loadApps()
-                        }
-                    },
-                    onVersionTap = {
-                        versionTapCounter += 1
-                        coroutineScope.launch {
-                            when {
-                                versionTapCounter == SECRET_TAPS ->
-                                    platform.showMessage(getString(Res.string.select_all_enabled))
-                                versionTapCounter in (SECRET_TAPS_HINT_AFTER + 1)..<SECRET_TAPS ->
-                                    platform.showMessage(getString(Res.string.select_all_tip, SECRET_TAPS - versionTapCounter))
-                            }
                         }
                     },
                 )

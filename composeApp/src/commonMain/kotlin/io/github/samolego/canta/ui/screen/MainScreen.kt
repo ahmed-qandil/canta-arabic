@@ -45,7 +45,6 @@ import io.github.samolego.canta.ui.component.CantaTopBar
 import io.github.samolego.canta.ui.component.fab.PresetEditFAB
 import io.github.samolego.canta.ui.dialog.DeviceChooserDialog
 import io.github.samolego.canta.ui.dialog.ExplainBadgesDialog
-import io.github.samolego.canta.ui.dialog.NoWarrantyDialog
 import io.github.samolego.canta.ui.dialog.ShizukuRequirementDialog
 import io.github.samolego.canta.ui.dialog.SuccessDialog
 import io.github.samolego.canta.ui.dialog.UninstallAppsDialog
@@ -193,12 +192,6 @@ private fun MainDialogs(
     settingsViewModel: SettingsViewModel,
     closeApp: () -> Unit,
 ) {
-    val showRiskDialog by settingsViewModel.showRiskDialog.collectAsStateWithLifecycle()
-
-    if (showRiskDialog) {
-        NoWarrantyDialog(onProceed = settingsViewModel::acceptRiskDialog, onCancel = closeApp)
-    }
-
     when (val dialog = mainViewModel.dialog) {
         null -> {}
         is MainDialog.ConfirmUninstall -> UninstallAppsDialog(

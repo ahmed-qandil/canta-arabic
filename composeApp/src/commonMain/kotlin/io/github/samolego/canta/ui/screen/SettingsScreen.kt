@@ -72,14 +72,12 @@ import io.github.samolego.canta.ui.component.ExpandIcon
 import io.github.samolego.canta.ui.component.SettingsTextItem
 import io.github.samolego.canta.ui.viewmodel.SettingsViewModel
 
-private const val CANTA_WEBSITE = "https://samolego.github.io/Canta"
 
 @Composable
 fun SettingsScreen(
     platform: CantaPlatform,
     onNavigateBack: () -> Unit,
     settingsViewModel: SettingsViewModel,
-    onVersionTap: () -> Unit,
     deviceUsers: List<DeviceUser> = emptyList(),
     selectedUserId: Int? = null,
     onUserSelected: (Int) -> Unit = {},
@@ -181,29 +179,6 @@ fun SettingsScreen(
                         onCommit = settingsViewModel::saveCommitsUrl,
                     )
                 }
-            }
-
-            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = stringResource(Res.string.app_version, BuildInfo.VERSION_NAME),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.clickable(onClick = onVersionTap)
-                )
-                Text(
-                    text = CANTA_WEBSITE,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.clickable { platform.openUrl(CANTA_WEBSITE) }
-                )
             }
         }
     }
